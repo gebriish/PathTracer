@@ -1,0 +1,12 @@
+BUILD/
+
+# Windows project files
+**/*.sln
+**/*.vcxproj
+**/*.vcxproj.user
+**/*.vcxproj.filters
+
+.vs/
+.vscode/
+
+**/*.jpg
