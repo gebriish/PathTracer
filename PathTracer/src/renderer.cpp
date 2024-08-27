@@ -8,7 +8,7 @@
 #include "utils.h"
 
 vec3 Renderer::sample_square() const {
-    return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+    return vec3(random_float() - 0.5, random_float() - 0.5, 0);
 }
 
 void Renderer::onRender(Camera& camera, Scene& scene) {
@@ -80,20 +80,38 @@ void Renderer::writeColor(unsigned char* img,const vec3& color, unsigned int pix
     img[pixel_index + 2] = static_cast<unsigned char>(bbytes);   
 }
 
+float reflectance(float cosine, float refraction_index) {
+    // Use Schlick's approximation for reflectance.
+    auto r0 = (1 - refraction_index) / (1 + refraction_index);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * std::pow((1 - cosine), 5);
+}
+
 bool scatterMaterial(const Material& mat, const Ray& r, const HitRecord& rec, vec3& attenuation, Ray& scattered) {
     
     vec3 scatter_direction;
+    if (!mat.glass) {
+        scatter_direction = random_unit_vector() + rec.normal;
 
-    scatter_direction = random_unit_vector() + rec.normal;
+    }
+    else {
+        float ri = rec.front_face ? (1.0 / mat.refractive_index) : mat.refractive_index;
+        float cos_theta = std::fmin(dot(-r.Direction, rec.normal), 1.0);
+        float sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
-    if (scatter_direction.near_zero())
-        scatter_direction = rec.normal;
+        bool cannot_refract = ri * sin_theta > 1.0;
+
+        if (cannot_refract || reflectance(cos_theta, ri) > random_float())
+            scatter_direction = reflect(r.Direction, rec.normal + random_unit_vector() * mat.roughness/2);
+        else
+            scatter_direction = refract(r.Direction, rec.normal + random_unit_vector() * mat.roughness/2, ri);
+
+    }
+
+
 
     scattered = Ray{rec.p, scatter_direction};
-
-
     attenuation = mat.base_color; 
-
     return true;
 }
 
