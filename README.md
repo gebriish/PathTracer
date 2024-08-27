@@ -15,5 +15,3 @@ set build configuration to Release and hit build.
 
 using 
 `premake5 gmake2` with `make config=release` should also work.
-
-^ also works.
