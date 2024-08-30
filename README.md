@@ -7,10 +7,7 @@ Currently I only officially support windows (but the compilation should work sin
 ---
 ### Compilation
 
-prerequisite: **premake5**
-
-`premake5 vs2022`
-
+Run the `Setup.bat` file and open the `SimplePathTracer.sln` in vs2022
 set build configuration to Release and hit build.
 
 using 
